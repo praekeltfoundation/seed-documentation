@@ -54,6 +54,7 @@ either continue indefinitely or until the requested number of times is reached.
 The service can also be provided with a payload and auth token to pass along
 without outbound requests.
 
+
 ### Seed Message Sender
 
 **GitHub:** [https://github.com/praekelt/seed-message-sender](https://github.com/praekelt/seed-message-sender)  
@@ -61,6 +62,14 @@ without outbound requests.
 upstream Vumi HTTP API endpoints. It will retry the sending if those messages are
 unavailable when the attempt is made. It can also be used as in incoming message
 store but nothing will process those currently.
+
+
+### Seed Service Rating
+
+**GitHub:** [https://github.com/praekelt/seed-service-rating](https://github.com/praekelt/seed-service-rating)  
+**Responsibility:** This service provides backend services store requests for
+service rating (invites) and the results of those ratings once undertaken.
+
 
 ### Seed Control Interface Service
 
