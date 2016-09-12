@@ -25,8 +25,8 @@ The following services are available for a complete Seed Maternal Health Stack.
 
 ### Seed Identity Store
 
-*GitHub:* https://github.com/praekelt/seed-identity-store  
-*Responsibility:* This service creates a UUID per end user of the system against
+**GitHub:** [https://github.com/praekelt/seed-identity-store](https://github.com/praekelt/seed-identity-store)  
+**Responsibility:** This service creates a UUID per end user of the system against
 which multiple addresses of many types can be stored. For example, MSISDN (cell number),
 email address, Facebook ID. It is also a central store of requests to be opt-ed out,
 which are then broadcast to all services via webhooks.   
@@ -34,8 +34,8 @@ which are then broadcast to all services via webhooks.
 
 ### Seed Stage Based Messaging
 
-*GitHub:* https://github.com/praekelt/seed-stage-based-messaging  
-*Responsibility:* This service stores the details of all subscriptions to
+**GitHub:** [https://github.com/praekelt/seed-stage-based-messaging](https://github.com/praekelt/seed-stage-based-messaging)  
+**Responsibility:** This service stores the details of all subscriptions to
 stage-based content on the system plus the content itself and default schedules.
 
 It processes data as follows:
@@ -48,8 +48,8 @@ It processes data as follows:
 
 ### Seed Scheduler
 
-*GitHub:* https://github.com/praekelt/seed-scheduler  
-*Responsibility:* This service listens for requests to hit other REST API's with
+**GitHub:** [https://github.com/praekelt/seed-scheduler](https://github.com/praekelt/seed-scheduler)  
+**Responsibility:** This service listens for requests to hit other REST API's with
 at the provided interval. This can be in cron or every-x based format. It will
 either continue indefinitely or until the requested number of times is reached.
 The service can also be provided with a payload and auth token to pass along
@@ -57,24 +57,24 @@ without outbound requests.
 
 ### Seed Message Sender
 
-*GitHub:* https://github.com/praekelt/seed-message-sender  
-*Responsibility:* This service is responsible for storing and sending messages to
+**GitHub:** [https://github.com/praekelt/seed-message-sender](https://github.com/praekelt/seed-message-sender)  
+**Responsibility:** This service is responsible for storing and sending messages to
 upstream Vumi HTTP API endpoints. It will retry the sending if those messages are
 unavailable when the attempt is made. It can also be used as in incoming message
 store but nothing will process those currently.
 
 ### Seed Control Interface Service
 
-*GitHub:* https://github.com/praekelt/seed-control-interface-service  
-*Responsibility:* This service provides backend services to the Control Interface
+**GitHub:** [https://github.com/praekelt/seed-control-interface-service](https://github.com/praekelt/seed-control-interface-service)  
+**Responsibility:** This service provides backend services to the Control Interface
 web service. It keeps track of other service configuration including their URL,
 metrics, health and user tokens. Dashboards configurations are also stored here.
 
 
 ### Seed Auth API
 
-*GitHub:* https://github.com/praekelt/seed-auth-api  
-*Responsibility:* This service provides authentication and user and permission
+**GitHub:** [https://github.com/praekelt/seed-auth-api](https://github.com/praekelt/seed-auth-api)  
+**Responsibility:** This service provides authentication and user and permission
 management for role-based access to the Control Interface.
 
 
@@ -85,9 +85,9 @@ Each project should also have a custom Django project that has been called both
 specific business logic such as registration and change validation and integration
 into 3rd party systems. Examples of this are:
 
-* HelloMama (Nigeria): https://github.com/praekelt/hellomama-registration
-* FamilyConnect (Uganda): https://github.com/praekelt/familyconnect-registration
-* NDOH - MomConnect/NurseConnect (South Africa): https://github.com/praekeltfoundation/ndoh-hub
+* HelloMama (Nigeria): [https://github.com/praekelt/hellomama-registration](https://github.com/praekelt/hellomama-registration)
+* FamilyConnect (Uganda): [https://github.com/praekelt/familyconnect-registration](https://github.com/praekelt/familyconnect-registration)
+* NDOH - MomConnect/NurseConnect (South Africa): [https://github.com/praekeltfoundation/ndoh-hub](https://github.com/praekeltfoundation/ndoh-hub)
 
 
 ## Prereqs
