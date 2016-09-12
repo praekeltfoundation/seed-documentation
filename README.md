@@ -1,7 +1,6 @@
 # Seed Maternal Health Overview
 
-The following describes the connective configuration of a Seed Maternal Health
-stack.
+The following describes the components of a Seed Maternal Health stack.
 
 
 ## Overview
@@ -98,7 +97,9 @@ of a Seed Maternal Health Stack.
 1. Seperate Postgres databases for each Backend Service, Control Interface and Help Desk.
 2. Seperate RabbitMQ vhosts for each Backend Service.
 3. Shared RabbitMQ vhost for Junebug
-4. Graphite
+4. Shared Redis KV store
+5. Graphite
+6. Sentry (optional)
 
 
 ## Deployment order
