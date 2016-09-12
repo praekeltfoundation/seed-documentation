@@ -1,0 +1,206 @@
+# Seed Maternal Health Configuration
+
+The following describes the connective configuration of a Seed Maternal Health
+stack. It is a multi-step process with some reliance between services that in
+some instances requires initial bootstrapping then returning re-configuration
+and restarting. All services in this stack are optimised for Docker-based
+deployment and Dockerfile's are provided in each repo, however the components
+can also be deployed using traditional methods too. Most components are expected
+to use Environment Variables to configure their setup for things like databases
+and other pre-reqs. Furthermore, this guide provides additional advice and scripts
+for a Praekelt Mission Control based deployment.
+
+
+## Deployment order
+
+It is recommended that the deployment takes place in the following order:
+
+1. Shared Backend Services
+2. Project specific hub
+3. Control interface
+4. Connectivity
+5. Applications
+6. Help Desk (optional)
+
+
+## Prereqs
+
+The following pre-reqs must be in place before attempting deployment and configuration
+of a Seed Maternal Health Stack.
+
+1. Seperate Postgres databases for each Backend Service, Control Interface and Help Desk.
+2. Seperate RabbitMQ vhosts for each Backend Service.
+3. Shared RabbitMQ vhost for Junebug
+4. Shared Redis KV store
+5. Graphite
+6. Sentry (optional)
+
+
+## 1. Deploy Shared Backend Services
+
+In this repo you will find a helper script for deployment on Mission Control.
+
+It expects the following variables set:
+
+* prefix - project slug (e.g. "hellomama")
+* domain - added to prefix (e.g. "prefix.seed.example.org")
+* dockerhub - FQDN of private Docker image host
+* redis - FQDN of shared redis cluster or node
+* amqp - FQDN of shared APQP service like RabbitMQ
+* amqp_user - shared APQP service vhost username
+* amqp_pass - shared APQP service vhost password
+* postgres - shared Postres service
+* sentry - FQDN of shared Sentry service
+
+Providing a consistent approach to naming credentials has taken place it also
+needs the following variables setting. We also provide the full list of envvars
+required for if this has not taken place below.
+
+* SECRET_KEY_IDENTITIES - Django secret key
+* DB_PASS_IDENTITIES - Identity Store Postgres DB password
+* IDENTITIES_SENTRY_DSN - Sentry DSN
+
+* SECRET_KEY_SBM - Django secret key
+* DB_PASS_SBM - Stage Based Messaging Postgres DB password
+* STAGE_BASED_MESSAGING_SENTRY_DSN - Sentry DSN
+* SCHEDULER_API_TOKEN_SBM - Auth token to talk to Scheduler
+* SCHEDULER_INBOUND_API_TOKEN_SBM - Auth token Scheduler should talk to Stage Based Messaging with
+* IDENTITY_STORE_TOKEN_SBM - Auth token to talk to Identity Store
+* MESSAGE_SENDER_TOKEN_SBM - Auth token to talk to Message Sender
+
+* SECRET_KEY_MS - Django secret key
+* DB_PASS_MS - Message Sender Postgres DB password
+* MESSAGE_SENDER_SENTRY_DSN - Sentry DSN
+* MESSAGE_SENDER_VUMI_API_URL_TEXT - FQDN of Vumi API for SMS sending
+* MESSAGE_SENDER_VUMI_ACCOUNT_KEY_TEXT - Account Key of Vumi API (SMS)
+* MESSAGE_SENDER_VUMI_CONVERSATION_KEY_TEXT - Conversation Key of Vumi API (SMS)
+* MESSAGE_SENDER_VUMI_ACCOUNT_TOKEN_TEXT - Auth Token of Vumi API (SMS)
+* MESSAGE_SENDER_VUMI_API_URL_VOICE - FQDN of Vumi API for Audio sending
+* MESSAGE_SENDER_VUMI_ACCOUNT_KEY_VOICE - Account Key of Vumi API (Voice)
+* MESSAGE_SENDER_VUMI_CONVERSATION_KEY_VOICE - Conversation Key of Vumi API (Voice)
+* MESSAGE_SENDER_VUMI_ACCOUNT_TOKEN_VOICE - Auth Token of Vumi API (Voice)
+
+* SECRET_KEY_SCH - Django secret key
+* DB_PASS_SCH - Scheduler Postgres DB password
+* SCHEDULER_SENTRY_DSN - Sentry DSN
+
+* SECRET_KEY_SVCRATE - Django secret key
+* DB_PASS_SVCRATE - Service Rating Postgres DB password
+* SERVICE_RATING_SENTRY_DSN - Sentry DSN
+
+* SECRET_KEY_HUB - Django secret key
+* DB_PASS_HUB - Hub Postgres DB password
+* HUB_SENTRY_DSN - Sentry DSN
+* STAGE_BASED_MESSAGING_TOKEN_HUB - Auth token to talk to Stage Based Messaging
+* IDENTITY_STORE_TOKEN_HUB - Auth token to talk to Identity Store
+* MESSAGE_SENDER_TOKEN_HUB - Auth token to talk to Message Sender
+
+
+
+### 1.1 Seed Identity Store
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* IDENTITIES_DATABASE - dj_database_url style config
+* IDENTITIES_SENTRY_DSN - Sentry DSN
+* BROKER_URL - AMQP setup
+* METRICS_URL - URL of Metrics HTTP API
+* METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
+
+
+### 1.2 Seed Stage Based Messaging
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* STAGE_BASED_MESSAGING_DATABASE - dj_database_url style config
+* STAGE_BASED_MESSAGING_SENTRY_DSN - Sentry DSN
+* BROKER_URL - AMQP setup
+* METRICS_URL - URL of Metrics HTTP API
+* METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
+* SCHEDULER_URL - FQDN of Scheduler API
+* SCHEDULER_API_TOKEN - Auth token to talk to Scheduler
+* SCHEDULER_INBOUND_API_TOKEN - Auth token Scheduler should talk to Stage Based Messaging with
+* IDENTITY_STORE_URL - FQDN of Scheduler API
+* IDENTITY_STORE_TOKEN - Auth token to talk to Identity Store
+* MESSAGE_SENDER_URL - FQDN of Scheduler API
+* MESSAGE_SENDER_TOKEN - Auth token to talk to Message Sender
+* STAGE_BASED_MESSAGING_URL - URL of Subscriptions endpoint on this service (FQDN plus /api/v1/subscriptions)
+
+
+### 1.3 Seed Scheduler
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* SCHEDULER_DATABASE - dj_database_url style config
+* SCHEDULER_SENTRY_DSN - Sentry DSN
+* BROKER_URL - AMQP setup
+* METRICS_URL - URL of Metrics HTTP API
+* METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
+
+
+### 1.4 Seed Message Sender
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* MESSAGE_SENDER_DATABASE - dj_database_url style config
+* MESSAGE_SENDER_SENTRY_DSN - Sentry DSN
+* BROKER_URL - AMQP setup
+* METRICS_URL - URL of Metrics HTTP API
+* METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
+* VUMI_API_URL_VOICE - FQDN of Vumi API for Audio sending
+* VUMI_ACCOUNT_KEY_VOICE - Account Key of Vumi API (Voice)
+* VUMI_CONVERSATION_KEY_VOICE - Conversation Key of Vumi API (Voice)
+* VUMI_ACCOUNT_TOKEN_VOICE - Auth Token of Vumi API (Voice)
+* VUMI_API_URL_TEXT - FQDN of Vumi API for SMS sending
+* VUMI_ACCOUNT_KEY_TEXT - Account Key of Vumi API (SMS)
+* VUMI_CONVERSATION_KEY_TEXT - Conversation Key of Vumi API (SMS)
+* VUMI_ACCOUNT_TOKEN_TEXT - Auth Token of Vumi API (SMS)
+* MESSAGE_SENDER_MAX_RETRIES - maximum attempts per message
+* MESSAGE_SENDER_MAX_FAILURES - when to view concurrent failures as subscription termination
+
+
+### 1.5 Seed Service Rating
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* SERVICE_RATING_DATABASE - dj_database_url style config
+* SERVICE_RATING_SENTRY_DSN - Sentry DSN
+* BROKER_URL - AMQP setup
+* METRICS_URL - URL of Metrics HTTP API
+* METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
+
+### 1.6 Seed Control Interface Service
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* IDENTITIES_DATABASE - dj_database_url style config
+* IDENTITIES_SENTRY_DSN - Sentry DSN
+* BROKER_URL - AMQP setup
+* METRICS_URL - URL of Metrics HTTP API
+* METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
+
+
+### 1.7 Seed Auth API
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* IDENTITIES_DATABASE - dj_database_url style config
+* IDENTITIES_SENTRY_DSN - Sentry DSN
+* BROKER_URL - AMQP setup
+
+
+## 1.8 Project Specific Hub
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* HUB_DATABASE - dj_database_url style config
+* HUB_SENTRY_DSN - Sentry DSN
+* BROKER_URL - AMQP setup
+* METRICS_URL - URL of Metrics HTTP API
+* METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
+* IDENTITY_STORE_URL - FQDN of Scheduler API
+* IDENTITY_STORE_TOKEN - Auth token to talk to Identity Store
+* MESSAGE_SENDER_URL - FQDN of Scheduler API
+* MESSAGE_SENDER_TOKEN - Auth token to talk to Message Sender
+* STAGE_BASED_MESSAGING_URL - FQDN of Stage Based Messaging API
+* STAGE_BASED_MESSAGING_TOKEN - Auth token to talk to Stage Based Messaging
