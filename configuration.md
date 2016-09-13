@@ -53,8 +53,8 @@ It expects the following variables set:
 * sentry - FQDN of shared Sentry service
 
 Providing a consistent approach to naming credentials has taken place it also
-needs the following variables setting. We also provide the full list of envvars
-required for if this has not taken place below.
+needs the following variables setting. We also provide the full list of script
+variable required for if this has not taken place below.
 
 * SECRET_KEY_IDENTITIES - Django secret key
 * DB_PASS_IDENTITIES - Identity Store Postgres DB password
@@ -96,8 +96,14 @@ required for if this has not taken place below.
 * MESSAGE_SENDER_TOKEN_HUB - Auth token to talk to Message Sender
 
 
+**NOTE:** You can set "SUPERUSER_PASSWORD" on all Django Docker containers which
+will create a user called "admin" with that password if it doesn't exist. You
+*must* change that password once the service is bootstrapped.
+
 
 ### 1.1 Seed Identity Store
+
+**Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
 * SECRET_KEY - Django secret key
@@ -109,6 +115,8 @@ required for if this has not taken place below.
 
 
 ### 1.2 Seed Stage Based Messaging
+
+**Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
 * SECRET_KEY - Django secret key
@@ -129,6 +137,8 @@ required for if this has not taken place below.
 
 ### 1.3 Seed Scheduler
 
+**Environment Variable:**
+
 * DJANGO_SETTINGS_MODULE - Django settings module
 * SECRET_KEY - Django secret key
 * SCHEDULER_DATABASE - dj_database_url style config
@@ -139,6 +149,8 @@ required for if this has not taken place below.
 
 
 ### 1.4 Seed Message Sender
+
+**Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
 * SECRET_KEY - Django secret key
@@ -158,8 +170,24 @@ required for if this has not taken place below.
 * MESSAGE_SENDER_MAX_RETRIES - maximum attempts per message
 * MESSAGE_SENDER_MAX_FAILURES - when to view concurrent failures as subscription termination
 
+**Required Configuration:**
+
+The application needs users with auth tokens for each unique frontend application that
+is required to have access. The best thing to do is "app_type_transport" for
+consistency. For example, "app_public_ussd".  
+
+The application also needs users with auth tokens for each unique service
+account that is required to have access. The best thing to do is
+"service_servicename" for consistency. For example, "service_control_interface".
+
+For the Message Sender this includes:
+* service_stage_based_messaging
+* service_hub
+
 
 ### 1.5 Seed Service Rating
+
+**Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
 * SECRET_KEY - Django secret key
@@ -169,7 +197,10 @@ required for if this has not taken place below.
 * METRICS_URL - URL of Metrics HTTP API
 * METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
 
+
 ### 1.6 Seed Control Interface Service
+
+**Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
 * SECRET_KEY - Django secret key
@@ -182,14 +213,31 @@ required for if this has not taken place below.
 
 ### 1.7 Seed Auth API
 
+**Environment Variable:**
+
 * DJANGO_SETTINGS_MODULE - Django settings module
 * SECRET_KEY - Django secret key
 * IDENTITIES_DATABASE - dj_database_url style config
 * IDENTITIES_SENTRY_DSN - Sentry DSN
 * BROKER_URL - AMQP setup
 
+**Required Configuration:**
+
+Documentation on the Auth API can be found at: http://seed-auth-api.rtfd.org  
+It needs to be bootstrapped in the following order:
+* Create an organisation
+* Create two teams in that organisation for CI Admins and CI Users
+* Grant those teams "ci:view" permissions
+
+Users should be placed in the "CI Users" team  to get access to the CI
+(we haven't implemented granular permissions yet). Once a user has been given
+basic permissions, the responsibility for creating Seed Service specific access
+tokens is given to the Seed Control Interface Service. This will allow all
+data manipulation to be done in the users context, providing an audit trail.
 
 ## 1.8 Project Specific Hub
+
+**Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
 * SECRET_KEY - Django secret key
@@ -204,3 +252,18 @@ required for if this has not taken place below.
 * MESSAGE_SENDER_TOKEN - Auth token to talk to Message Sender
 * STAGE_BASED_MESSAGING_URL - FQDN of Stage Based Messaging API
 * STAGE_BASED_MESSAGING_TOKEN - Auth token to talk to Stage Based Messaging
+
+**Required Configuration:**
+
+The application needs users with auth tokens for each unique frontend application that
+is required to have access. The best thing to do is "app_type_transport" for
+consistency. For example, "app_public_ussd".  
+
+The application also needs users with auth tokens for each unique service
+account that is required to have access. For the hub this includes the Control
+Interface Service. The best thing to do is "service_servicename" for
+consistency. For example, "service_control_interface".  
+
+Each application also needs a Source defining in the Registrations app. This
+sets the authority level for each registration which can influence the message set
+the recipient is signed up for.
