@@ -210,6 +210,24 @@ For the Message Sender this includes:
 * METRICS_URL - URL of Metrics HTTP API
 * METRICS_AUTH_TOKEN - Auth token of Metrics HTTP API
 
+**Required Configuration:**
+
+The Control Interface Service needs an account on every other service with Staff
+level access. That account (best named control_interface_service) needs a token
+and the combination of service name (from below), API URL (without the /api/v1)
+and token should be added to the Services application. Required service names:
+
+* SEED_SCHEDULER
+* SEED_MESSAGE_SENDER
+* SEED_STAGE_BASED_MESSAGING
+* HUB
+* SEED_IDENTITY_SERVICE
+
+There then needs to be two scheduled tasks set up in the Periodic Task application.
+
+1. To poll those services at the rate the deployment requires. It should call "services.tasks.QueuePollService" every x minutes
+2. To pull metric names from each service. It should call "services.tasks.QueueServiceMetricSync"
+something like once per hour. 
 
 ### 1.7 Seed Auth API
 
@@ -267,3 +285,19 @@ consistency. For example, "service_control_interface".
 Each application also needs a Source defining in the Registrations app. This
 sets the authority level for each registration which can influence the message set
 the recipient is signed up for.
+
+### 1.9 Control Interface
+
+**Environment Variable:**
+
+* DJANGO_SETTINGS_MODULE - Django settings module
+* SECRET_KEY - Django secret key
+* CONTROL_INTERFACE_DATABASE - dj_database_url style config
+* CONTROL_INTERFACE_SENTRY_DSN - Sentry DSN
+* CONTROL_INTERFACE_SERVICE_TOKEN - Token to access CI Service API
+* CONTROL_INTERFACE_SERVICE_URL - URL of CI Service API
+* AUTH_SERVICE_URL - URL of Auth Service (no API endpoint)
+* CI_LOGO_URL - link to logo PNG file for UI
+* METRIC_API_URL - URL of Metrics API
+
+**Required Configuration:**
