@@ -103,6 +103,9 @@ will create a user called "admin" with that password if it doesn't exist. You
 
 ### 1.1 Seed Identity Store
 
+**Requires Celery Worker: ** Yes  
+**Requires Celery Beat:** No  
+
 **Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
@@ -115,6 +118,9 @@ will create a user called "admin" with that password if it doesn't exist. You
 
 
 ### 1.2 Seed Stage Based Messaging
+
+**Requires Celery Worker: ** Yes  
+**Requires Celery Beat:** No  
 
 **Environment Variable:**
 
@@ -137,6 +143,9 @@ will create a user called "admin" with that password if it doesn't exist. You
 
 ### 1.3 Seed Scheduler
 
+**Requires Celery Worker: ** Yes  
+**Requires Celery Beat:** Yes  
+
 **Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
@@ -149,6 +158,9 @@ will create a user called "admin" with that password if it doesn't exist. You
 
 
 ### 1.4 Seed Message Sender
+
+**Requires Celery Worker: ** Yes  
+**Requires Celery Beat:** No  
 
 **Environment Variable:**
 
@@ -187,6 +199,9 @@ For the Message Sender this includes:
 
 ### 1.5 Seed Service Rating
 
+**Requires Celery Worker: ** Yes  
+**Requires Celery Beat:** No  
+
 **Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
@@ -199,6 +214,9 @@ For the Message Sender this includes:
 
 
 ### 1.6 Seed Control Interface Service
+
+**Requires Celery Worker: ** Yes  
+**Requires Celery Beat:** Yes  
 
 **Environment Variable:**
 
@@ -231,6 +249,9 @@ something like once per hour.
 
 ### 1.7 Seed Auth API
 
+**Requires Celery Worker: ** No  
+**Requires Celery Beat:** No  
+
 **Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
@@ -254,6 +275,9 @@ tokens is given to the Seed Control Interface Service. This will allow all
 data manipulation to be done in the users context, providing an audit trail.
 
 ## 1.8 Project Specific Hub
+
+**Requires Celery Worker: ** Yes  
+**Requires Celery Beat:** No  
 
 **Environment Variable:**
 
@@ -288,6 +312,9 @@ the recipient is signed up for.
 
 ### 1.9 Control Interface
 
+**Requires Celery Worker: ** No  
+**Requires Celery Beat:** No  
+
 **Environment Variable:**
 
 * DJANGO_SETTINGS_MODULE - Django settings module
@@ -301,3 +328,5 @@ the recipient is signed up for.
 * METRIC_API_URL - URL of Metrics API
 
 **Required Configuration:**
+
+Only above env vars.
