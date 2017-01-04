@@ -1,0 +1,28 @@
+# Defaults for the required envvars are provided in this file.
+
+# NOTE: values from the running env will take precedence over values
+# defined here.
+
+# -- Local settings:
+# Where to create volumes that are mounted into the containers
+VOLUME_LOCATION=./volumes
+# Where the Seed git code repositories are located on your local machine
+CODE_LOCATION=../..
+
+# -- Seed specific settings:
+PROJECT_CODE=seed
+DEBUG=False
+
+# -- Non docker service settings:
+POSTGRES_BASE_URL=postgres://docker:docker@10.200.10.1
+RABBITMQ_HOST=10.200.10.1
+RABBITMQ_PORT=5672
+RABBITMQ_URL=amqp://docker:docker@${RABBITMQ_HOST}:${RABBITMQ_PORT}
+
+# -- Seed service tokens:
+SCHEDULER_API_TOKEN=a123
+SCHEDULER_INBOUND_API_TOKEN=a123
+IDENTITY_STORE_TOKEN=a123
+MESSAGE_SENDER_URL=a123
+CONTROL_INTERFACE_SERVICE_TOKEN=a123
+HUB_TOKEN=a123

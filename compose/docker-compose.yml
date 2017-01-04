@@ -1,0 +1,163 @@
+version: '2.1'
+
+services:
+  graphite:
+    image: 'praekeltfoundation/graphite'
+    environment:
+      - DATABASE_URL=${POSTGRES_BASE_URL}/${GRAPHITE_DB:-graphite}
+      - GRAPHITE_WEB_SECRET_KEY=gLumOj-psd0boVMC
+      - ENABLE_AMQP=True
+      - AMQP_HOST=${RABBITMQ_HOST}
+      - AMQP_PORT=${RABBITMQ_PORT:-5672}
+      - AMQP_USER=metrics
+      - AMQP_PASSWORD=metrics
+      - AMQP_VHOST=/metrics
+      - AMQP_VERBOSE=True
+      - AMQP_METRIC_NAME_IN_BODY=""
+    volumes:
+      - '${VOLUME_LOCATION}/graphite:/opt/graphite/storage'
+    ports:
+      - '8010:8000'
+
+  metrics-api:
+    image: 'prk/vumi-metrics'
+    environment:
+      - URL_PATH_PREFIX=/${PROJECT_CODE}/infr/metrics-api
+      - AMQP_HOST=${RABBITMQ_HOST}
+      - AMQP_PORT=${RABBITMQ_PORT:-5672}
+      - GRAPHITE_USERNAME=admin
+      - GRAPHITE_PASSWORD=admin
+      - STATIC_OWNER_ID=qa
+      - AMQP_USERNAME=metrics
+      - AMQP_PASSWORD=metrics
+      - AMQP_VHOST=/metrics
+      - VUMI_OPT_BUCKET_SIZE=10
+      - GRAPHITE_DISABLE_AUTO_PREFIX=True
+      - GRAPHITE_URL=http://graphite/
+    ports:
+      - '8011:8000'
+    depends_on:
+      - graphite
+
+  scheduler:
+    build:
+      context: ${CODE_LOCATION}/seed-scheduler
+    volumes:
+      - '${CODE_LOCATION}/seed-scheduler:/app'
+    command: ["django-entrypoint.sh", "--reload"]
+    ports:
+      - '8020:80'
+    environment:
+      - DEBUG
+      - SCHEDULER_DATABASE=${POSTGRES_BASE_URL}/${SCHEDULER_DB:-seed_scheduler}
+      - BROKER_URL=${RABBITMQ_URL}//seed_scheduler
+      - METRICS_URL=http://metrics-api:8000/${PROJECT_CODE}/infr/metrics-api
+    depends_on:
+      - metrics-api
+
+  identity-store:
+    build:
+      context: ${CODE_LOCATION}/seed-identity-store
+    volumes:
+      - '${CODE_LOCATION}/seed-identity-store:/app'
+    command: ["django-entrypoint.sh", "--reload"]
+    ports:
+      - '8021:8000'
+    environment:
+      - DEBUG
+      - IDENTITIES_DATABASE=${POSTGRES_BASE_URL}/${IDENTITY_DB:-seed_identity_store}
+      - BROKER_URL=${RABBITMQ_URL}//seed_identity_store
+      - METRICS_URL=http://metrics-api:8000/${PROJECT_CODE}/infr/metrics-api
+    depends_on:
+      - metrics-api
+
+  message-sender:
+    build:
+      context: ${CODE_LOCATION}/seed-message-sender
+    volumes:
+      - '${CODE_LOCATION}/seed-message-sender:/app'
+    command: ["django-entrypoint.sh", "--reload"]
+    ports:
+      - '8022:8000'
+    environment:
+      - DEBUG
+      - MESSAGE_SENDER_DATABASE=${POSTGRES_BASE_URL}/${MESSAGE_SENDER_DB:-seed_message_sender}
+      - BROKER_URL=${RABBITMQ_URL}//seed_message_sender
+      - METRICS_URL=http://metrics-api:8000/${PROJECT_CODE}/infr/metrics-api
+    depends_on:
+      - metrics-api
+
+  sbm:
+    build:
+      context: ${CODE_LOCATION}/seed-stage-based-messaging
+    volumes:
+      - '${CODE_LOCATION}/seed-stage-based-messaging:/app'
+    command: ["django-entrypoint.sh", "--reload"]
+    ports:
+      - '8023:8000'
+    environment:
+      - DEBUG
+      - STAGE_BASED_MESSAGING_DATABASE=${POSTGRES_BASE_URL}/${SBM_DB:-seed_stage_based_messaging}
+      - BROKER_URL=${RABBITMQ_URL}//seed_stage_based_messaging
+      - METRICS_URL=http://metrics-api:8000/${PROJECT_CODE}/infr/metrics-api
+      - STAGE_BASED_MESSAGING_URL=http://sbm/api/v1/subscriptions
+      - SCHEDULER_URL=http://scheduler/api/v1
+      - IDENTITY_STORE_URL=http://identity-store/api/v1
+      - MESSAGE_SENDER_URL=http://message-sender/api/v1
+    depends_on:
+      - scheduler
+      - identity-store
+      - message-sender
+      - metrics-api
+
+  auth:
+    build:
+      context: ${CODE_LOCATION}/seed-auth-api
+    volumes:
+      - '${CODE_LOCATION}/seed-auth-api:/app'
+    command: ["django-entrypoint.sh", "--reload"]
+    ports:
+      - '8024:8000'
+    environment:
+      - DEBUG
+      - AUTH_API_DATABASE=${POSTGRES_BASE_URL}/${AUTH_API_DB:-seed_auth}
+
+  ci-service:
+    build:
+      context: ${CODE_LOCATION}/seed-control-interface-service
+    volumes:
+      - '${CODE_LOCATION}/seed-control-interface-service:/app'
+    command: ["django-entrypoint.sh", "--reload"]
+    ports:
+      - '8025:8000'
+    environment:
+      - DEBUG
+      - SEED_CONTROL_INTERFACE_SERVICE_DATABASE=${POSTGRES_BASE_URL}/${CI_SERVICE_DB:-seed_control_interface_service}
+      - BROKER_URL=${RABBITMQ_URL}//seed_control_interface_service
+    depends_on:
+      - auth
+      - metrics-api
+
+  ci:
+    build:
+      context: ${CODE_LOCATION}/seed-control-interface
+    volumes:
+      - '${CODE_LOCATION}/seed-control-interface:/app'
+    command: ["django-entrypoint.sh", "--reload"]
+    ports:
+      - '8026:8000'
+    environment:
+      - DEBUG
+      - SEED_CONTROL_INTERFACE_DATABASE=${POSTGRES_BASE_URL}/${CI_DB:-seed_control_interface}
+      - BROKER_URL=${RABBITMQ_URL}//seed_control_interface
+      - CONTROL_INTERFACE_SERVICE_URL=http://ci-service:8000/api/v1
+      - IDENTITY_STORE_URL=http://identity-store:8000/api/v1
+      - AUTH_SERVICE_URL=http://auth:8000/
+      - METRICS_URL=http://metrics-api:8000/${PROJECT_CODE}/infr/metrics-api
+      - CONTROL_INTERFACE_SERVICE_TOKEN
+      - IDENTITY_STORE_TOKEN
+      - HUB_TOKEN
+    depends_on:
+      - auth
+      - ci-service
+      - metrics-api
