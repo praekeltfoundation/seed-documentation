@@ -1,0 +1,13 @@
+version: '2.1'
+
+services:
+  ci-service-base:
+    build:
+      context: ${CODE_LOCATION}/seed-control-interface-service
+    volumes:
+      - '${CODE_LOCATION}/seed-control-interface-service:/app'
+    command: ["django-entrypoint.sh", "--reload"]
+    environment:
+      - DEBUG
+      - SEED_CONTROL_INTERFACE_SERVICE_DATABASE=${POSTGRES_BASE_URL}/${CI_SERVICE_DB:-seed_control_interface_service}
+      - BROKER_URL=${RABBITMQ_URL}//seed_control_interface_service

@@ -123,20 +123,23 @@ services:
       - AUTH_API_DATABASE=${POSTGRES_BASE_URL}/${AUTH_API_DB:-seed_auth}
 
   ci-service:
-    build:
-      context: ${CODE_LOCATION}/seed-control-interface-service
-    volumes:
-      - '${CODE_LOCATION}/seed-control-interface-service:/app'
-    command: ["django-entrypoint.sh", "--reload"]
+    extends:
+      file: seed-base.yml
+      service: ci-service-base
     ports:
       - '8025:8000'
-    environment:
-      - DEBUG
-      - SEED_CONTROL_INTERFACE_SERVICE_DATABASE=${POSTGRES_BASE_URL}/${CI_SERVICE_DB:-seed_control_interface_service}
-      - BROKER_URL=${RABBITMQ_URL}//seed_control_interface_service
-    depends_on:
-      - auth
-      - metrics-api
+
+  ci-service-beat:
+    extends:
+      file: seed-base.yml
+      service: ci-service-base
+    command: ["celery", "beat", "--app", "seed_control_interface_service", "--loglevel", "info", "-S", "djcelery.schedulers.DatabaseScheduler"]
+
+  ci-service-worker:
+    extends:
+      file: seed-base.yml
+      service: ci-service-base
+    command: ["celery", "worker", "--app", "seed_control_interface_service", "--loglevel", "info", "-Q", "seed_control_interface_service,priority,mediumpriority,metrics,celery"]
 
   ci:
     build:
