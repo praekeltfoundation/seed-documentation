@@ -33,7 +33,7 @@ services:
       - AMQP_VHOST=/metrics
       - VUMI_OPT_BUCKET_SIZE=10
       - GRAPHITE_DISABLE_AUTO_PREFIX=True
-      - GRAPHITE_URL=http://graphite/
+      - GRAPHITE_URL=http://graphite:8000/
     ports:
       - '8011:8000'
     depends_on:
@@ -128,6 +128,8 @@ services:
       service: ci-service-base
     ports:
       - '8025:8000'
+    depends_on:
+      - metrics-api
 
   ci-service-beat:
     extends:
@@ -156,7 +158,7 @@ services:
       - CONTROL_INTERFACE_SERVICE_URL=http://ci-service:8000/api/v1
       - IDENTITY_STORE_URL=http://identity-store:8000/api/v1
       - AUTH_SERVICE_URL=http://auth:8000/
-      - METRICS_URL=http://metrics-api:8000/${PROJECT_CODE}/infr/metrics-api
+      - METRIC_API_URL=http://metrics-api:8000/${PROJECT_CODE}/infr/metrics-api
       - CONTROL_INTERFACE_SERVICE_TOKEN
       - IDENTITY_STORE_TOKEN
       - HUB_TOKEN
